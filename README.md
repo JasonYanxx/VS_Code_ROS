@@ -1,4 +1,4 @@
-# Step By Step Integration of ROS in VS Code
+# Step By Step Integration of ROS in VS Code （for docker）
 
 This repository provides an example set up that can be used to automate your ROS workflow in the VS Code IDE.
 
@@ -12,6 +12,14 @@ This repository provides an example set up that can be used to automate your ROS
 * [6. Debugging Your Nodes (Global Workspace)](#6-debugging-your-nodes-global-workspace)
 * [7. Multi-Root ROS Workspace](#7-multi-root-ros-workspace)
 
+## 0) Pre-requirements
+
+- install gdb
+
+  ```
+  sudo apt-get install gdb
+  ```
+
 ## 1) VS Code Extensions
 
 I use the following extensions:
@@ -23,7 +31,7 @@ I use the following extensions:
 - Python (If you're using rospy) -> Mandatory
 - vscode-icons (Optional, but helps with all the different file types used by ROS) -> Optional
 - ROS (Adds helper actions for starting the roscore, for creating ROS packages and provides syntax highlighting for .msg, .urdf and other ROS files) -> Mandatory (Needed for the catkin_make task type)
- 
+
 If you clone this repo, and open the folder in a new VS Code instance, then VS Code will ask you if you want to install the recommended extensions.
 
 ### GitLens has a problem with git versions <= 2.7. Update git on Ubuntu 16.04
@@ -100,7 +108,16 @@ To add intellisense support for ROS nodes, we need to provide a c_cpp_properties
 This is used by the C/C++ Extension to provide autocompletion.
 For this to work, it needs to know about te project dependencies and where to find them. 
 CMake is able to provide this info through the help of a compile_commands.json file.
-To generate this file, we need to add the "-DCMAKE_EXPORT_COMPILE_COMMANDS=1" compile option to catkin_make.
+To generate this file, we need to add the "-DCMAKE_EXPORT_COMPILE_COMMANDS=1" compile option to catkin_make. Please input such [command](https://blog.csdn.net/weixin_44444810/article/details/120751735) in terminal of vscode:
+
+```shell
+$ current dir: ~/catkin_ws
+sudo -i
+catkin_make -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+# or 
+# catkin_make -DCMAKE_EXPORT_COMPILE_COMMANDS=YES
+```
+
 Section 5 explains how we can automate the creation of the file through the use of vscode tasks.  
 For now add this file to your .vscode folder.
 
@@ -219,11 +236,33 @@ the ROS extension.
 You can now run `CTRL+SHIFT+P`, search for "Tasks: Run Task" and select the "ROS: central_catkin_make" task we configured. Since we set it to be the default build task with the `group` option you can also run that task with the shortcut `CTRL+SHIFT+B`. 
 The build type is set to "Debug", so that the ROS nodes can be debugged later on.
 
+**Unfortunately**, errors will occur when execute "ROS: central_catkin_make" since vscode do not have enough permission:
+
+```
+> Executing task in folder catkin_ws: catkin_make --directory /home/autoware/shared_dir/catkin_ws -j4 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1 < 
+
+Base path: /home/autoware/shared_dir/catkin_ws 
+Source space: /home/autoware/shared_dir/catkin_ws/src 
+Build space: /home/autoware/shared_dir/catkin_ws/build 
+
+[Errno 13] Permission denied: '/home/autoware/shared_dir/catkin_ws/build/.built_by' 
+The terminal process "/bin/bash '-c', 'catkin_make --directory /home/autoware/shared_dir/catkin_ws -j4 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1'" failed to launch (exit code: 1). 
+```
+
+Alternatively, we can open a terminal to execute the same command as "ROS: central_catkin_make"  does. 
+
+```shell
+catkin_make --directory /home/autoware/shared_dir/catkin_ws -j4 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1 
+```
+
+
+
 You can add your own additional configurations and run them with the "Run Task" action, or provide your own keybindings for your own build configurations.
 Check out the VS Code documentation for more information on that.
 
 If your ROS workspace contains a lot of packages you may not want to build them all.
 You can add these additional parameters to the task for that:
+
 ```
 {
     "version": "2.0.0",
@@ -465,7 +504,7 @@ In the example below I started the talker and the listener configuration and ste
 passed the `talker_pub.publish(...)` code. 
 Notice that I switched the active session to the "Talker_Node" in the debugger tool bar and that I don't see
 the breakpoint beeing hit in the listener window on the right side.
-  
+
 ![alt text](docs/talkerComp.png)
 
 Now VS Code does a pretty good job switching automatically the session where a breakpoint was hit
@@ -529,6 +568,7 @@ Here is an example workspace with only the VS_Code_ROS package added:
   task to your tasks.json where you just set "dir" or "ls" as the command, change the "cwd" option and run the task until you get the right path you need.
   Here are the configrations for the shown package:
   
+
 c_cpp_properties.json
 ```
 {
@@ -717,7 +757,7 @@ So have fun coding and debugging ROS nodes with VS Code.
 
 
  <!-- Links  -->
- 
+
 [i1370]: https://github.com/ros/ros_comm/issues/1370
 [i19793]: https://github.com/Microsoft/vscode/issues/19793
 [idebug]: https://vscode.readthedocs.io/en/latest/editor/debugging/
