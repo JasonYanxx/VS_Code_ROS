@@ -2,8 +2,8 @@
 
 This repository provides an example set up that can be used to automate your ROS workflow in the VS Code IDE.
 
-
 ## Contents:
+
 * [1. VS Code Extensions](#1-vs-code-extensions)
 * [2. Set Up Your VS Code Workspace](#2-set-up-your-vs-code-workspace)
 * [3. Intellisense](#3-intellisense)
@@ -11,11 +11,12 @@ This repository provides an example set up that can be used to automate your ROS
 * [5. Building Your Nodes (Global Workspace)](#5-building-your-nodes-global-workspace)
 * [6. Debugging Your Nodes (Global Workspace)](#6-debugging-your-nodes-global-workspace)
 * [7. Multi-Root ROS Workspace](#7-multi-root-ros-workspace)
+* [8. Appendix](#8-appendix)
 
 ## 0) Pre-requirements
 
 - install gdb
-
+  
   ```
   sudo apt-get install gdb
   ```
@@ -46,7 +47,7 @@ sudo apt-get install git -y
 
 Check with `git --version` that the newly installed version is > 2.7.
 
-## 2) Set Up your VS Code Workspace 
+## 2) Set Up your VS Code Workspace
 
 ### Install ROS
 
@@ -54,6 +55,7 @@ If you haven't installed ROS yet, then install it now.
 Here is the official documentation for ROS noetic for Ubuntu: http://wiki.ros.org/noetic/Installation/Ubuntu
 
 Here's a quick wrap up (tested on Windows 11 with WSL2 - Ubuntu Distro):
+
 ```
 $ sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 $ curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
@@ -74,6 +76,7 @@ $ catkin_make
 
 Assuming your catkin workspace is all set up and running smoothly, we need to tell VS Code where our ROS workspace is.
 This can be accomplished in two ways:
+
 1) Open the catkin root folder in VS Code and use the complete catkin folder as your workspace.
     This is a centralized ROS package management approach, where you get to see every ROS package and where you have to manage your configurations
     globally for every package. Meaning one launch.json and one task.json for everything.
@@ -91,6 +94,7 @@ But first let's try the first approach and build/debug a package from a centrali
 Start a VS Code instance, open the catkin_ws workspace folder and go to "File>Save Workspace As" and save the workspace file in your catkin root.
 This should add the {workspaceName}.code-workspace file and a .vscode folder to your catkin_ws root folder.  
 You should now have the following (or a similar) folder structure:
+
 ```
 ~/catkin_ws
     .vscode/
@@ -122,6 +126,7 @@ Section 5 explains how we can automate the creation of the file through the use 
 For now add this file to your .vscode folder.
 
 c_cpp_properties.json
+
 ```
 {
     "configurations": [
@@ -138,6 +143,8 @@ c_cpp_properties.json
 }
 ```
 
+If you failed to save the modified file, please refer to [Appendix](#8-appendix) for reference.
+
 ### Clangd Extension
 
 VS Code has another option to provide intellisense for C++ code.
@@ -151,6 +158,7 @@ clangd language server that the extension prompts you to.
 After that, disable the C/C++ extension intellisense
 and tell the clangd extension where to find the compile_commands.json.
 Open up your global vs code user settings and paste this:
+
 ```
 "clangd.arguments": [
     "--compile-commands-dir=${workspaceFolder}/build",
@@ -173,6 +181,7 @@ to be active globally. So you need to disable one intellisense provider globally
 ROS package source code needs to be in the catkin_ws/src folder.
 You can clone this repository to your catkin_ws if you need a project to get started.
 After that you should have the following folder structure:
+
 ```
 ~/catkin_ws
     .vscode/
@@ -188,6 +197,7 @@ After that you should have the following folder structure:
                 package.xml
     ROS_WS.code-workspace
 ```
+
 ## 5) Building Your Nodes (Global Workspace)
 
 You should now have a VS Code workspace set up in your catkin workspace root.
@@ -202,6 +212,7 @@ We can add our own build task configuration.
 Add the following task.json to the folder ~/catkin_ws/.vscode:
 
 tasks.json
+
 ```
 {
     "version": "2.0.0",
@@ -211,7 +222,7 @@ tasks.json
             "type": "catkin_make",
             "args": [
                 "--directory",
-				"<path-to-your-catkin-ws>",
+                "<path-to-your-catkin-ws>",
                 "-j4",
                 "-DCMAKE_BUILD_TYPE=Debug",
                 "-DCMAKE_EXPORT_COMPILE_COMMANDS=1"
@@ -255,8 +266,6 @@ Alternatively, we can open a terminal to execute the same command as "ROS: centr
 catkin_make --directory /home/autoware/shared_dir/catkin_ws -j4 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1 
 ```
 
-
-
 You can add your own additional configurations and run them with the "Run Task" action, or provide your own keybindings for your own build configurations.
 Check out the VS Code documentation for more information on that.
 
@@ -272,7 +281,7 @@ You can add these additional parameters to the task for that:
             "type": "catkin_make",
             "args": [
                 "--directory",
-				"<path-to-your-catkin-ws>",
+                "<path-to-your-catkin-ws>",
                 "--pkg",
                 "<your package name, e.g. hello_vs_code>",
                 "-j4",
@@ -288,6 +297,7 @@ You can add these additional parameters to the task for that:
     ]
 }
 ```
+
 Note that catkin will still be configuring every package in the catkin-ws, but it will only build the specified one.
 You can check this by inspecting the ~/catkin_ws/devel/lib/**packagename** folder.
 
@@ -304,6 +314,7 @@ You can also clone this repo and build the package I am providing here.
 Add a launch configuration (launch.json) to the .vscode folder in the catkin_ws and paste this to debug the talker node.
 
 launch.json
+
 ```
 {
     // Use IntelliSense to learn about possible attributes.
@@ -333,6 +344,7 @@ launch.json
     ]
 }
 ```
+
 If you're using your own package, you have to change the path in the `program` option to point to your executable.
 Unfortunatly I haven't found a way to generate this automatically based on the catkin build system outputs.
 Maybe it's possible by using roslaunch and then attach to the active node. 
@@ -353,9 +365,6 @@ If you used the task.json example given in this guide, then you should be fine.
 After that you can step through your node like in the example below:
 ![alt text](docs/talkerDebug.png)
 
-
-
-
 ### Debug Multiple ROS Nodes with VS Code (C++)
 
 Since ROS uses the publisher/subscriber and request/response models, it's usually more interresting to debug multiple nodes that are interconnected through the ROS master.
@@ -367,7 +376,7 @@ There are currently three ways (known to me):
 
 1) Open up a new VS Code window and select a configuration to be used by the new window and start the debugger.
 2) Switch to the debug tab and select a configuration from the combo box, and start 
-every configuration by hand.
+   every configuration by hand.
 3) Use an additional `compounds` option and start multiple configuration simultaniously.
 
 So lets get those up and running and see whats possible.
@@ -384,13 +393,17 @@ So you're left with debugging a maximum of two nodes.
 The approach that worked for me, was presented in [#19793](i19793):
 
 - Launch a new VS Code window
+
 - Use the "Add Workspace Folder" action 
   
   ![alt text](docs/addWS.png)
 
 - Select the catkin root folder (in my case catkin_ws), or in a multi-root setup select the ROS package folder you wan't to debug
+
 - Switch to the debug tab. VS Code automatically detects all launch configurations inside your new workspace
+
 - Set your breakpoints, select a configuration and start debugging
+
 - Repeat for every node you want to debug
 
 Below is an example where I am debugging three different nodes. A talker node that publishes to two subscribed listener nodes.
@@ -412,6 +425,7 @@ The downside is that this approach is consuming more window space, which can
 get cluttered on a single monitor set up.
 
 Here is the complete launch.json and the tasks.json used for the global set up:
+
 ```
 {
     // Use IntelliSense to learn about possible attributes.
@@ -488,7 +502,7 @@ Here is the complete launch.json and the tasks.json used for the global set up:
 }
 ```
 
-#### The Compound Approach 
+#### The Compound Approach
 
 VS Code can launch multiple debug configuration from the same window, you just need to define them (we'll be using the ones defined above).
 Switch to the debug tab, set your breakpoints, select a configuration and start it.
@@ -554,9 +568,9 @@ So here is my working set up:
 
 - First remove the catkin_ws folder, leaving you with an empty workspace
 - Add all the ROS packages you want as additional folders to the workspace, using the context menu when right clicking the explorer tab (see image below). Since the VS Code workspace is only a logical construct, it doesn't create a copy of your files or does something else with them.
-It's more like a direct link to your specific ROS package, without any noise from any parent directory.
-Here is an example workspace with only the VS_Code_ROS package added:  
-![alt text](docs/addFolder.png)
+  It's more like a direct link to your specific ROS package, without any noise from any parent directory.
+  Here is an example workspace with only the VS_Code_ROS package added:  
+  ![alt text](docs/addFolder.png)
 - Add a .vscode folder at the package root folder. This enables VS Code to find the launch configuration for every folder you add to your workspace
 - Add a taks.json, c_cpp_properties.json and launch.json configuration file to the .vscode folder and add your package specific configurations (see the .vscode folder in the VS_CODE_ROS package in the image above)
 - Add your catkin_ws folder last.
@@ -567,9 +581,9 @@ Here is an example workspace with only the VS_Code_ROS package added:
   If you need to debug the path for a package, you can add a 
   task to your tasks.json where you just set "dir" or "ls" as the command, change the "cwd" option and run the task until you get the right path you need.
   Here are the configrations for the shown package:
-  
 
 c_cpp_properties.json
+
 ```
 {
     "configurations": [
@@ -596,6 +610,7 @@ c_cpp_properties.json
 ```
 
 tasks.json
+
 ```
 {
     "version": "2.0.0",
@@ -612,8 +627,8 @@ tasks.json
             ],
             "problemMatcher": [],
             "options": {
-				"cwd": "${workspaceFolder}/../../"
-			},
+                "cwd": "${workspaceFolder}/../../"
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -624,6 +639,7 @@ tasks.json
 ```
 
 launch.json
+
 ```
 {
     // Use IntelliSense to learn about possible attributes.
@@ -699,6 +715,7 @@ launch.json
         ]
 }
 ```
+
 Since the packages are subfolders of the catkin_ws/src folder, VS Code keeps highlighting the files in the explorer tab that are also open in the editor. Most of the time it will unfold the complete catkin_ws folder in the explorer tab, to show you the file beeing edited. You can set the "explorer.autoReveal" option to false to tell VS Code to stop messing with the folders.
 
 You now have a multi-root environment where every ROS package is completly self contained and you see the catkin_ws root folder. 
@@ -711,7 +728,6 @@ This gives me a clean look on this single folder, while still providing the full
 You can always add and remove any package folder from your workspace without losing anything.
 The only difference is the catkin_ws folder with the previuosly mentioned intellisene problem.
 
-
 With this set up you also get a nice little suffix with the name of the package folder to your debugging launch configurations when you are in the debug tab.
 I just copied the launch.json from the VS_CODE_ROS package to catkin_ws/.vscode to get this doubled output:
 
@@ -721,6 +737,7 @@ You can also add a package specific task.json and enable single package building
 Setting multiple default build tasks in a multi-root environment will force VS Code to show a searchable prompt when using the build shortcut `CTRL+SHIFT+B` and asking for a selection of the 
 task that should be run.
 Here is the example shown above of a package specific default build task that only builds the hello_vs_code package:
+
 ```
 {
     "version": "2.0.0",
@@ -737,8 +754,8 @@ Here is the example shown above of a package specific default build task that on
             ],
             "problemMatcher": [],
             "options": {
-			    "cwd": "${workspaceFolder}/../../"
-			},
+                "cwd": "${workspaceFolder}/../../"
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -752,12 +769,25 @@ You can add any other tasks specific to that package, like launching rviz or oth
 And then you can add those tasks as a preLaunchTask in your launch.json to start automatically with your debugging session when you hit F5.
 Or you can add package specific keybindings to your package specific tasks, to enable a really fast workflow.
 
-
 So have fun coding and debugging ROS nodes with VS Code.
 
-
- <!-- Links  -->
+<!-- Links  -->
 
 [i1370]: https://github.com/ros/ros_comm/issues/1370
 [i19793]: https://github.com/Microsoft/vscode/issues/19793
 [idebug]: https://vscode.readthedocs.io/en/latest/editor/debugging/
+
+## 8) Appendix
+
+If your edit in VSCODE cannot be saved (e.g., modify a file), you should assign root permission for VSCODE. However, if you use VSCODE in a docker environment, it is difficult to assign root permission for VSCODE. Alternatively, you could change the write-read permission of files you want to modify. In default, these files may only be modified by root users. You can use the following command to check the write-read attribute of files:
+
+```shell
+ls -l
+```
+
+To make all users writable, you can use the follwing commands:
+
+```shell
+chmod 777 the_path_of_the_aiming_file
+chmod -R 777 the_path_of_the_aiming_folder
+```
