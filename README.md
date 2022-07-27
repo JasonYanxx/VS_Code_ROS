@@ -779,6 +779,8 @@ So have fun coding and debugging ROS nodes with VS Code.
 
 ## 8) Appendix
 
+### Modify permission
+
 If your edit in VSCODE cannot be saved (e.g., modify a file), you should assign root permission for VSCODE. However, if you use VSCODE in a docker environment, it is difficult to assign root permission for VSCODE. Alternatively, you could change the write-read permission of files you want to modify. In default, these files may only be modified by root users. You can use the following command to check the write-read attribute of files:
 
 ```shell
@@ -791,3 +793,7 @@ To make all users writable, you can use the follwing commands:
 chmod 777 the_path_of_the_aiming_file
 chmod -R 777 the_path_of_the_aiming_folder
 ```
+
+### Using .launch file
+
+[vscode-ros/debug-support.md at master · ms-iot/vscode-ros · GitHub](https://github.com/ms-iot/vscode-ros/blob/master/doc/debug-support.md#launch)
